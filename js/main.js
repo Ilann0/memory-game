@@ -1,4 +1,4 @@
-// window.onload = function() {}
+window.onload = function() {
 
 	const CARD_FRONT = '../img/card-front.png';
 
@@ -239,8 +239,6 @@
 		});
 	}
 
-	// function compareCard()
-
 	async function createCardGrid(numOfCells, createCardFunc, getImgFunc) {
 		let numOfImgToFetch = numOfCells / 2;
 
@@ -262,8 +260,6 @@
 
 		$cards.click(cardClickEventHandler)
 	}
-
-	// setCardSrc()
 
 	createCardGrid(localGet('numOfCells'), createCard, getImgUrls); // 12 18 24
 
@@ -327,7 +323,7 @@
 	// ------------------------------------------------------------------------------------
 	// General purpose fuctions
 
-
+	// --------------------------------------------------
 	// Taken from https://javascript.info/task/shuffle
 	function shuffle(array) {
 		for (let i = array.length - 1; i > 0; i--) {
@@ -336,6 +332,7 @@
 		}
 		return array;
 	}
+	// ---------------------------------------------------
 
 	function startTimer() {
 		ms = 0;
@@ -349,29 +346,4 @@
 	}
 
 	// ---------------------------------------------------------------------------------------
-	// Buttons
-
-
-
-
-// ---------------------------------------------------------------------
-// PSEUDO
-
-/*
-get img from server
-create card
-add image to card
-dom.append(card grid)
-listen for clicks
-count clicks --> after two clicks pause
-timeout on 2nd click's function to pause
-in that function 
-	compare the two cards
-if match -> keep images fliped
-
-///////////////////
-if game finish show modal with score personal high score, global high score, start new game
-starting menu
-
-
-*/
+}
