@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" href="./styles/main.css">
+	<meta charset="UTF-8">
+	<title>Memory game</title>
+</head>
+<body>
+	<div id="blur-div" class="">
+		<header>
+			<div class="nav-bar">
+				<div class="click">
+					<p>Attempts: <span>0</span></p>
+				</div>
+				<div class="time">
+					<span>00:00</span>
+				</div>
+				<div class="pause">
+					<a class="pause-link"><i class="fas fa-pause"></i></a>
+				</div>
+			</div>
+		</header>
+		<div class="game-main-container">
+			<div id="card-grid">
+				<!-- JS Injected -->
+			</div>
+		</div>
+	</div>
+	<div class="modal-wraper" style="display: none;">
+		<div class="modal-main-container off">
+			<div id="main-menu" class="modal-box">
+				<div class="modal-title">
+					<h1>PAUSED</h1>
+				</div>
+				<div class="modal-buttons-container">
+					<button id="resume" class="modal-buttons draw-border">Resume</button>
+					<button id="new-game" class="modal-buttons draw-border">New Game</button>
+					<button id="change-difficulty" class="modal-buttons draw-border">Change Difficulty</button>
+				</div>
+				<div class="bottom-btn-container">
+					<button id="change-theme" class="modal-buttons draw-border">Change theme</button>
+				</div>
+			</div>
+			<div id="choose-difficulty" class="modal-box">
+				<div class="modal-title">
+					<h1>CHOOSE DIFFICULTY</h1>
+				</div>
+				<div class="modal-buttons-container">
+					<button id="easy" class="modal-buttons draw-border">Easy</button>
+					<button id="medium" class="modal-buttons draw-border">Medium</button>
+					<button id="hard" class="modal-buttons draw-border">Hard</button>
+					<button id="set-size" class="modal-buttons draw-border">Set the size<br/>(experimental)</button>
+				</div>
+				<div class="bottom-btn-container">
+					<button id="back" class="modal-buttons draw-border">Back</button>
+				</div>
+			</div>
+			<div id="choose-theme" class="modal-box">
+				<div class="modal-title">
+					<h1>CHANGE THEME</h1>
+				</div>
+				<div class="modal-buttons-container">
+					<button id="cats" class="modal-buttons draw-border">cats</button>
+					<button id="dogs" class="modal-buttons draw-border">dogs</button>
+					<button id="moreDogs" class="modal-buttons draw-border">more dogs</button>
+				</div>
+				<div class="bottom-btn-container">
+					<button id="back" class="modal-buttons draw-border">back</button>
+				</div>
+			</div>
+		</div>
+		<div id="win" class="modal-box">
+				<div class="modal-title">
+					<h1>YOU WON!</h1>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<script src="https://code.jquery.com/jquery-3.4.1.min.js" integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo=" crossorigin="anonymous"></script>
+	<script src="https://cdn.rawgit.com/nnattawat/flip/master/dist/jquery.flip.min.js"></script>
+	<script src="./js/fontawesome.js"></script>
+	<script src="./js/main.js"></script>
+</body>
+</html>
