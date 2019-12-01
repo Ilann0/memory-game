@@ -246,7 +246,7 @@
 		const userScore = $timeSpan.text();
 		userScore < window.localStorage.getItem('userScore') && window.localStorage.setItem('userScore', userScore);
 
-		setTimeout(showWinModal, 1500);
+		setTimeout(showWinModal, 1125);
 	}
 
 	function showWinModal() {
