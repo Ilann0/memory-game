@@ -40,7 +40,7 @@ window.onload = function() {
 	let timeInterval;
 	let timerRunningFlag = true;
 
-	// Local storage variables
+	// Local storage
 	let gameData;
 	let userScore;
 
@@ -54,15 +54,23 @@ window.onload = function() {
 				numOfCells: 12,
 				urlApi: 'https://dog.ceo/api/breeds/image/random',
 				themeFlag: 'dogs',
+				difficultyFlag: 0, // Up to 3 (easy, medium, hard, custom)
 			}
 			window.localStorage.setItem('_gameData', JSON.stringify(gameData))
 		} else {
 			gameData = JSON.parse(window.localStorage.getItem('_gameData'));
 		}
 
-		!window.localStorage.getItem('userScore') && JSON.parse(window.localStorage.setItem('userScore', '00:00'));
+		userScore = {
+			0: '99:99',
+			1: '99:99',
+			2: '99:99',
+			3: '99:99',
+		}
 
-		createCardGrid(localGet('numOfCells'), createCard, getImgUrls); // 12 18 24
+		!window.localStorage.getItem('userScore') && window.localStorage.setItem('userScore', JSON.stringify(userScore));
+
+		createCardGrid(localGet('_gameData', 'numOfCells'), createCard, getImgUrls); // 12 18 24
 		// Hide modal elements
 		$chooseDifficultyModal.hide();
 		$chooseThemeModal.hide();
@@ -74,6 +82,9 @@ window.onload = function() {
 		$difficultyButtons.click(difficultyBtnEventHandler);
 		$chooseThemeButtons.click(chooseThemeBtnEventHandler);
 		$newGameBtn.click(newGameBtnEventHandler);
+
+		gameData  = JSON.parse(window.localStorage.getItem('_gameData'));
+		userScore = JSON.parse(window.localStorage.getItem('userScore'));
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -106,19 +117,23 @@ window.onload = function() {
 	function difficultyBtnEventHandler(e) {
 		switch (this.id) {
 			case 'easy':
-				localPost('numOfCells', '12');
+				localPost('_gameData', gameData, 'difficultyFlag', 0);
+				localPost('_gameData', gameData, 'numOfCells', '12');
 				window.location.reload();
 				break;
 			case 'medium':
-				localPost('numOfCells', '18');
+				localPost('_gameData', gameData, 'difficultyFlag', 1);
+				localPost('_gameData', gameData, 'numOfCells', '18');
 				window.location.reload();
 				break;
 			case 'hard':
-				localPost('numOfCells', '24');
+				localPost('_gameData', gameData, 'difficultyFlag', 2);
+				localPost('_gameData', gameData, 'numOfCells', '24');
 				window.location.reload();
 				break;
 			case 'set-size':
-				localPost('numOfCells', getUserInput());
+				localPost('_gameData', gameData, 'difficultyFlag', 3);
+				localPost('_gameData', gameData, 'numOfCells', getUserInput());
 				window.location.reload();
 				break;
 			case 'back':
@@ -129,8 +144,8 @@ window.onload = function() {
 
 	function chooseThemeBtnEventHandler(e) {
 		if (this.id !== 'back') {
-			localPost('urlApi', imageApis[this.id]);
-			localPost('themeFlag', this.id);
+			localPost('_gameData', gameData, 'urlApi', imageApis[this.id]);
+			localPost('_gameData', gameData, 'themeFlag', this.id);
 			$( this ).addClass('active');
 			window.location.reload();
 		 } else {
@@ -142,8 +157,8 @@ window.onload = function() {
 
 		// Get the src from other div and card el
 		!timeInterval && startTimer();
-		const src = this.lastElementChild.firstElementChild.src;
-		const card = e.target.parentElement.parentElement
+		const src  = this.lastElementChild.firstElementChild.src;
+		const card = e.target.parentElement.parentElement;
 
 		clickedCardsSrc.push(src);
 		clickedCards.push(card);
@@ -173,7 +188,7 @@ window.onload = function() {
 			$( card ).flip(false);
 			$( card ).on('click', cardClickEventHandler);
 		}
-		clickedCards = [];
+		clickedCards 	= [];
 		clickedCardsSrc = [];
 	}
 	
@@ -184,27 +199,35 @@ window.onload = function() {
 			goodAnswers.push(card);
 		}
 
-		const temp = clickedCards
-		clickedCards = [];
+		const temp 		= clickedCards;
+		clickedCards 	= [];
 		clickedCardsSrc = [];
 
 		setTimeout(() => flashCards(temp), 500);
 
 
-		if ( goodAnswers.length == localGet('numOfCells') ) {
+		if ( goodAnswers.length == localGet('_gameData', 'numOfCells') ) {
 			clearInterval(timeInterval);
 			winHandler();
 		}
 	}
 
 	function winHandler() {
-		const userScore = $timeSpan.text();
-		userScore < window.localStorage.getItem('userScore') && window.localStorage.setItem('userScore', userScore);
+		const score 		 = $timeSpan.text();
+		const difficultyFlag = localGet('_gameData', 'difficultyFlag');
 
+		// if better time (format '00:00' 'mm:ss')
+		console.log(localGet('userScore', difficultyFlag));
+
+		if (score < localGet('userScore', difficultyFlag)) {
+			localPost('userScore', userScore, difficultyFlag, score);
+		} 
 		setTimeout(showWinModal, 1125);
 	}
 
 	function showWinModal() {
+		const difficultyFlag = localGet('_gameData', 'difficultyFlag');
+
 		$mainMenuModal.hide();
 
 		$blurDiv.addClass('active');
@@ -212,7 +235,7 @@ window.onload = function() {
 		$winModal.slideDown();
 
 		$userScore.html($timeSpan.text());
-		$highestScore.html(localStorage.getItem('userScore'));
+		$highestScore.html(localGet('userScore', difficultyFlag));
 	}
 
 	// ------------------------------------------------------------------------------------------------------------
@@ -246,7 +269,7 @@ window.onload = function() {
 		const imgUrlCollection = [];
 		for (let i = 0; i < numOfImgToFetch; i++) {
 			let img = await fetchImgFunc();
-			switch (localGet('themeFlag')){
+			switch (localGet('_gameData', 'themeFlag')){
 				case 'cats':
 					imgUrlCollection.push(img[0].url);
 					imgUrlCollection.push(img[0].url);
@@ -300,7 +323,7 @@ window.onload = function() {
 	async function fetchImg() {
 		try {
 			const dataPromise = await $.get({
-				url: localGet('urlApi'),
+				url: localGet('_gameData', 'urlApi'),
 				dataType: 'JSON',
 			});
 
@@ -336,13 +359,13 @@ window.onload = function() {
 		}, 1000);
 	}
 
-	function localGet(key) {
-		return JSON.parse(window.localStorage.getItem('_gameData'))[key];
+	function localGet(dataPoint, key) {
+		return JSON.parse(window.localStorage.getItem(dataPoint))[key];
 	}
 
-	function localPost(key, value) {
-		gameData[key] = value;
-		window.localStorage.setItem('_gameData', JSON.stringify(gameData));
+	function localPost(dataPoint, dataVar, key, value) {
+		dataVar[key] = value;
+		window.localStorage.setItem(dataPoint, JSON.stringify(dataVar));
 	}
 
 	function getUserInput() {
@@ -372,7 +395,7 @@ window.onload = function() {
 		}
 		setTimeout(() => {
 			$modalOut[0].classList = 'modal-box';
-			$modalIn[0].classList = 'modal-box';
+			$modalIn[0].classList  = 'modal-box';
 		}, 500);
 	}
 
