@@ -1,4 +1,4 @@
-// window.onload = function() {
+window.onload = function() {
 
 	const CARD_FRONT = '../img/card-front.png';
 
@@ -8,6 +8,7 @@
 		moreDogs: 'https://random.dog/woof.json',
 	}
 
+	// JQuery elements objects
 	const $blurDiv 					= $( '#blur-div' );
 	const $pauseLink 		 		= $( '.pause-link' );
 	const $cardGrid 				= $( '#card-grid' );
@@ -29,6 +30,7 @@
 	let $cards;
 	let $cardsImg;
 
+	// Counters
 	let clickedCardsSrc = [];
 	let clickedCards 	= [];
 	let goodAnswers 	= [];
@@ -38,59 +40,67 @@
 	let timeInterval;
 	let timerRunningFlag = true;
 
-	// Set local storage
+	// Local storage variables
 	let gameData;
 	let userScore;
 
-	if (!window.localStorage.getItem('_gameData')) {
-		gameData = {
-			numOfCells: 12,
-			urlApi: 'https://dog.ceo/api/breeds/image/random',
-			themeFlag: 'dogs',
+	// ---------------------------------------------------------------------------------------------------------
+	// Main
+
+	function main() {
+		// Check if local storage data already exists
+		if (!window.localStorage.getItem('_gameData')) {
+			gameData = {
+				numOfCells: 12,
+				urlApi: 'https://dog.ceo/api/breeds/image/random',
+				themeFlag: 'dogs',
+			}
+			window.localStorage.setItem('_gameData', JSON.stringify(gameData))
+		} else {
+			gameData = JSON.parse(window.localStorage.getItem('_gameData'));
 		}
-		window.localStorage.setItem('_gameData', JSON.stringify(gameData))
-	} else {
-		gameData = JSON.parse(window.localStorage.getItem('_gameData'));
+
+		!window.localStorage.getItem('userScore') && JSON.parse(window.localStorage.setItem('userScore', '00:00'));
+
+		createCardGrid(localGet('numOfCells'), createCard, getImgUrls); // 12 18 24
+		// Hide modal elements
+		$chooseDifficultyModal.hide();
+		$chooseThemeModal.hide();
+		$winModal.hide();
+
+		// Add modal buttons eventListeners
+		$pauseLink.click(pauseLinkEventHandler);
+		$mainMenuButtons.click(mainMenuBtnEventHandler);
+		$difficultyButtons.click(difficultyBtnEventHandler);
+		$chooseThemeButtons.click(chooseThemeBtnEventHandler);
+		$newGameBtn.click(newGameBtnEventHandler);
 	}
 
-	!window.localStorage.getItem('userScore') && JSON.parse(window.localStorage.setItem('userScore', 0));
-
-	$chooseDifficultyModal.hide();
-	$chooseThemeModal.hide();
-	$winModal.hide();
-	JSON.parse(localStorage.getItem('_gameData'))
-
-	// Modal buttons eventListeners
-	$pauseLink.click(pauseLinkEventHandler);
-	$mainMenuButtons.click(mainMenuBtnEventHandler);
-	$difficultyButtons.click(difficultyBtnEventHandler);
-	$chooseThemeButtons.click(chooseThemeBtnEventHandler);
-	$newGameBtn.click(newGameBtnEventHandler);
-
-	function localGet(key) {
-		return JSON.parse(window.localStorage.getItem('_gameData'))[key];
+	// ------------------------------------------------------------------------------------------------------------
+	// Event handler functions
+	function pauseLinkEventHandler() {
+		timerRunningFlag = false;
+		$blurDiv.addClass('active');
+		$modalMainWraper.slideDown();
 	}
 
-	function localPost(key, value) {
-		gameData[key] = value;
-		window.localStorage.setItem('_gameData', JSON.stringify(gameData));
-	}
-
-	function createCard(imgUrlFront, imgUrlBack) {
-		return ( $(`
-			<div class="cards">
-				<div class="front">
-					<img src="${imgUrlFront}">
-				</div>
-				<div class="back">
-					<img src="${imgUrlBack}">
-				</div>
-			</div>
-		`) );
-	}
-
-	function newGameBtnEventHandler(){
-		window.location.reload();
+	function mainMenuBtnEventHandler(e) {
+		switch (this.id) {
+			case 'resume':
+				timerRunningFlag = true;
+				$blurDiv.removeClass('active')
+				$modalMainWraper.slideUp();
+				break;
+			case 'new-game':
+				window.location.reload();
+				break;
+			case 'change-difficulty':
+				animateModal($mainMenuModal, $chooseDifficultyModal, 'forward')
+				break;
+			case 'change-theme': 
+				animateModal($mainMenuModal, $chooseThemeModal, 'forward')
+				break;
+		}
 	}
 
 	function difficultyBtnEventHandler(e) {
@@ -117,15 +127,6 @@
 		}
 	}
 
-	function getUserInput() {
-		let userInput;
-
-		while (isNaN(userInput)){
-			userInput = parseInt(prompt('Please enter a (reasonable) number of cells for your grid: '));
-		}
-		return userInput;
-	}
-
 	function chooseThemeBtnEventHandler(e) {
 		if (this.id !== 'back') {
 			localPost('urlApi', imageApis[this.id]);
@@ -135,7 +136,7 @@
 		 } else {
 			animateModal($chooseThemeModal, $mainMenuModal, 'backward');
 		}
-	}	
+	}
 
 	function cardClickEventHandler(e) {
 
@@ -153,58 +154,12 @@
 		clickedCardsSrc.length == 2 && isMatch();
 	}
 
-	function mainMenuBtnEventHandler(e) {
-		switch (this.id) {
-			case 'resume':
-				timerRunningFlag = true;
-				$blurDiv.removeClass('active')
-				$modalMainWraper.slideUp();
-				break;
-			case 'new-game':
-				window.location.reload();
-				break;
-			case 'change-difficulty':
-				animateModal($mainMenuModal, $chooseDifficultyModal, 'forward')
-				break;
-			case 'change-theme': 
-				animateModal($mainMenuModal, $chooseThemeModal, 'forward')
-				break;
-		}
-	}
+	function newGameBtnEventHandler(){
+		window.location.reload();
+	}	
 
-	function animateModal($modalOut, $modalIn, directionStr) {
-		switch (directionStr) {	
-			case 'forward':
-				$modalOut.addClass('animated slideOutLeft');
-				setTimeout(() => $modalOut.hide(), 300);
-				setTimeout(() => $modalIn.show(), 400);
-				$modalIn.addClass('animated slideInRight');
-				break;
-			case 'backward': {
-				$modalOut.addClass('animated slideOutRight');
-				setTimeout(() => $modalOut.hide(), 300);
-				setTimeout(() => $modalIn.show(), 400);
-				$modalIn.addClass('animated slideInLeft');
-				break;
-			}
-		}
-		setTimeout(() => {
-			$modalOut[0].classList = 'modal-box';
-			$modalIn[0].classList = 'modal-box';
-		}, 500);
-	}
-
-	function pauseLinkEventHandler() {
-		timerRunningFlag = false;
-		$blurDiv.addClass('active');
-		$modalMainWraper.slideDown();
-	}
-
-	function updateCounters() {
-		clickCounter = 0;
-		attempts++;
-		$( '.click span' ).html(attempts);
-	}
+	// ------------------------------------------------------------------------------------------------------------
+	// Game logic functions
 
 	function isMatch() {
 		const sameSrc = (clickedCardsSrc[0] == clickedCardsSrc[1])
@@ -221,7 +176,7 @@
 		clickedCards = [];
 		clickedCardsSrc = [];
 	}
-
+	
 	function weGotAmatch(){
 		updateCounters()
 		for (card of clickedCards) {
@@ -260,13 +215,8 @@
 		$highestScore.html(localStorage.getItem('userScore'));
 	}
 
-
-	function flashCards(arrayOfCards) {
-		arrayOfCards.forEach(card => {
-			$(card).fadeOut(100).fadeIn(100).fadeOut(100).fadeIn(100);
-			$(card).addClass('matched');
-		});
-	}
+	// ------------------------------------------------------------------------------------------------------------
+	// Cards functions
 
 	async function createCardGrid(numOfCells, createCardFunc, getImgFunc) {
 		let numOfImgToFetch = numOfCells / 2;
@@ -290,18 +240,6 @@
 		$cards.click(cardClickEventHandler)
 	}
 
-	createCardGrid(localGet('numOfCells'), createCard, getImgUrls); // 12 18 24
-
-
-	function handleFetchError(response) {
-		$gameMainContainer.removeClass('loading');
-		console.log('ERROR LOADING IMAGES');
-		console.log(response);
-		alert('We encoutered an issue downloading the data\nPlease try reloading the page');
-	}
-
-
-	// Get all the urls
 	async function getImgUrls(numOfImgToFetch, fetchImgFunc) {
 		$gameMainContainer.addClass('loading')
 
@@ -323,17 +261,42 @@
 					break;
 			}
 		}
-
-		
 		$gameMainContainer.removeClass('loading');
 
 		const shuffledUrls = shuffle(imgUrlCollection);
 		
 		return shuffledUrls;
-	}	
+	}
 
+	function createCard(imgUrlFront, imgUrlBack) {
+		return ( $(`
+			<div class="cards">
+				<div class="front">
+					<img src="${imgUrlFront}">
+				</div>
+				<div class="back">
+					<img src="${imgUrlBack}">
+				</div>
+			</div>
+		`) );
+	}
 
-	// Ajax get request
+	function flashCards(arrayOfCards) {
+		arrayOfCards.forEach(card => {
+			$(card).fadeOut(100).fadeIn(100).fadeOut(100).fadeIn(100);
+			$(card).addClass('matched');
+		});
+	}
+
+	// ------------------------------------------------------------------------------------------------------------
+	// AJAX Call
+	function handleFetchError(response) {
+		$gameMainContainer.removeClass('loading');
+		console.log('ERROR LOADING IMAGE');
+		console.log(response);
+		alert('We encoutered an issue downloading the data\nPlease try reloading the page');
+	}
+
 	async function fetchImg() {
 		try {
 			const dataPromise = await $.get({
@@ -344,12 +307,11 @@
 			return dataPromise;
 
 		} catch(response) {
-			// statements
 			handleFetchError(response);
 		}
 	}
 	
-// ------------------------------------------------------------------------------------
+// ------------------------------------------------------------------------------------------------------------
 // General purpose fuctions
 
 	// --------------------------------------------------
@@ -373,5 +335,52 @@
 			}
 		}, 1000);
 	}
-// ---------------------------------------------------------------------------------------
-// }
+
+	function localGet(key) {
+		return JSON.parse(window.localStorage.getItem('_gameData'))[key];
+	}
+
+	function localPost(key, value) {
+		gameData[key] = value;
+		window.localStorage.setItem('_gameData', JSON.stringify(gameData));
+	}
+
+	function getUserInput() {
+		let userInput;
+
+		while (isNaN(userInput)){
+			userInput = parseInt(prompt('Please enter a (reasonable) number of cells for your grid: '));
+		}
+		return userInput;
+	}
+
+	function animateModal($modalOut, $modalIn, directionStr) {
+		switch (directionStr) {	
+			case 'forward':
+				$modalOut.addClass('animated slideOutLeft');
+				setTimeout(() => $modalOut.hide(), 300);
+				setTimeout(() => $modalIn.show(), 400);
+				$modalIn.addClass('animated slideInRight');
+				break;
+			case 'backward': {
+				$modalOut.addClass('animated slideOutRight');
+				setTimeout(() => $modalOut.hide(), 300);
+				setTimeout(() => $modalIn.show(), 400);
+				$modalIn.addClass('animated slideInLeft');
+				break;
+			}
+		}
+		setTimeout(() => {
+			$modalOut[0].classList = 'modal-box';
+			$modalIn[0].classList = 'modal-box';
+		}, 500);
+	}
+
+	function updateCounters() {
+		clickCounter = 0;
+		attempts++;
+		$( '.click span' ).html(attempts);
+	}
+// ------------------------------------------------------------------------------------------------------------
+	main();
+}
