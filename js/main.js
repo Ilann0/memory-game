@@ -1,4 +1,4 @@
-window.onload = function() {
+// window.onload = function() {
 
 	const CARD_FRONT = '../img/card-front.png';
 
@@ -7,9 +7,6 @@ window.onload = function() {
 		dogs: 'https://dog.ceo/api/breeds/image/random',
 		moreDogs: 'https://random.dog/woof.json',
 	}
-
-	const gifApi = 'api.giphy.com/v1/gifs/search';
-	const gifApiKey = 'Pm10N9aUP7Z7GybXQ31xyJBGZ1hkeE6Y';
 
 	const $blurDiv 					= $( '#blur-div' );
 	const $pauseLink 		 		= $( '.pause-link' );
@@ -24,6 +21,10 @@ window.onload = function() {
 	const $mainMenuModal 			= $( '#main-menu' );
 	const $chooseDifficultyModal	= $( '#choose-difficulty' );
 	const $chooseThemeModal 		= $( '#choose-theme' );
+	const $winModal 				= $( '#win' );
+	const $userScore				= $( '#user-score' );
+	const $highestScore				= $( '#highest-score' );
+	const $newGameBtn				= $( '#win #new-game' );
 
 	let $cards;
 	let $cardsImg;
@@ -39,6 +40,7 @@ window.onload = function() {
 
 	// Set local storage
 	let gameData;
+	let userScore;
 
 	if (!window.localStorage.getItem('_gameData')) {
 		gameData = {
@@ -51,8 +53,11 @@ window.onload = function() {
 		gameData = JSON.parse(window.localStorage.getItem('_gameData'));
 	}
 
+	!window.localStorage.getItem('userScore') && JSON.parse(window.localStorage.setItem('userScore', 0));
+
 	$chooseDifficultyModal.hide();
 	$chooseThemeModal.hide();
+	$winModal.hide();
 	JSON.parse(localStorage.getItem('_gameData'))
 
 	// Modal buttons eventListeners
@@ -60,6 +65,7 @@ window.onload = function() {
 	$mainMenuButtons.click(mainMenuBtnEventHandler);
 	$difficultyButtons.click(difficultyBtnEventHandler);
 	$chooseThemeButtons.click(chooseThemeBtnEventHandler);
+	$newGameBtn.click(newGameBtnEventHandler);
 
 	function localGet(key) {
 		return JSON.parse(window.localStorage.getItem('_gameData'))[key];
@@ -81,6 +87,10 @@ window.onload = function() {
 				</div>
 			</div>
 		`) );
+	}
+
+	function newGameBtnEventHandler(){
+		window.location.reload();
 	}
 
 	function difficultyBtnEventHandler(e) {
@@ -185,6 +195,7 @@ window.onload = function() {
 	}
 
 	function pauseLinkEventHandler() {
+		timerRunningFlag = false;
 		$blurDiv.addClass('active');
 		$modalMainWraper.slideDown();
 	}
@@ -227,10 +238,28 @@ window.onload = function() {
 
 		if ( goodAnswers.length == localGet('numOfCells') ) {
 			clearInterval(timeInterval);
-			displayStandardModal();
-
+			winHandler();
 		}
 	}
+
+	function winHandler() {
+		const userScore = $timeSpan.text();
+		userScore < window.localStorage.getItem('userScore') && window.localStorage.setItem('userScore', userScore);
+
+		setTimeout(showWinModal, 1500);
+	}
+
+	function showWinModal() {
+		$mainMenuModal.hide();
+
+		$blurDiv.addClass('active');
+		$modalMainWraper.slideDown();
+		$winModal.slideDown();
+
+		$userScore.html($timeSpan.text());
+		$highestScore.html(localStorage.getItem('userScore'));
+	}
+
 
 	function flashCards(arrayOfCards) {
 		arrayOfCards.forEach(card => {
@@ -320,8 +349,8 @@ window.onload = function() {
 		}
 	}
 	
-	// ------------------------------------------------------------------------------------
-	// General purpose fuctions
+// ------------------------------------------------------------------------------------
+// General purpose fuctions
 
 	// --------------------------------------------------
 	// Taken from https://javascript.info/task/shuffle
@@ -344,6 +373,5 @@ window.onload = function() {
 			}
 		}, 1000);
 	}
-
-	// ---------------------------------------------------------------------------------------
-}
+// ---------------------------------------------------------------------------------------
+// }
