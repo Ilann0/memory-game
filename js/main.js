@@ -217,8 +217,6 @@ window.onload = function() {
 		const difficultyFlag = localGet('_gameData', 'difficultyFlag');
 
 		// if better time (format '00:00' 'mm:ss')
-		console.log(localGet('userScore', difficultyFlag));
-
 		if (score < localGet('userScore', difficultyFlag)) {
 			localPost('userScore', userScore, difficultyFlag, score);
 		} 
