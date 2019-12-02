@@ -1,6 +1,6 @@
 window.onload = function() {
 
-	const CARD_FRONT = '../img/card-front.png';
+	const CARD_FRONT = './img/card-front.png';
 
 	const imageApis = {
 		cats: 'https://api.thecatapi.com/v1/images/search?size=full&limit=1',
